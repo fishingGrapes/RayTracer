@@ -13,3 +13,8 @@ void write_color( std::ostream& out, const color& pixel_color, int32_t samples_p
 
 	out << static_cast<int16_t>( 255.999 * r ) << ' ' << static_cast<int16_t>( 255.999 * g ) << ' ' << static_cast<int16_t>( 255.999 * b ) << '\n';
 }
+
+inline color operator*( const color& c1, const color& c2 )
+{
+	return color( c1.X * c2.X, c1.Y * c2.Y, c1.Z * c2.Z );
+}

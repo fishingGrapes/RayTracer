@@ -1,9 +1,12 @@
 #pragma once
 
+
 #include "hittable.h"
+#include "shadeable.h"
+
 #include "evals.h"
 
-class sphere : public hittable
+class sphere : public hittable, shadeable
 {
 
 public:
@@ -12,8 +15,8 @@ public:
 
 public:
 
-	sphere( point3 center, double_t radius )
-		:Center( center ), Radius( radius )
+	sphere( point3 center, double_t radius, std::shared_ptr<material> mat_ptr )
+		:shadeable( mat_ptr ), Center( center ), Radius( radius )
 	{
 	}
 
@@ -41,6 +44,7 @@ bool sphere::hit( const ray& r, double_t t_min, double_t t_max, OUT hit_record& 
 			record.Time = t;
 			record.Point = r.at( t );
 			record.set_face_normal( r, ( ( record.Point - Center ) / Radius ) );
+			record.MaterialPtr = MaterialPtr;
 
 			return true;
 		}
@@ -52,6 +56,7 @@ bool sphere::hit( const ray& r, double_t t_min, double_t t_max, OUT hit_record& 
 			record.Time = t;
 			record.Point = r.at( t );
 			record.set_face_normal( r, ( ( record.Point - Center ) / Radius ) );
+			record.MaterialPtr = MaterialPtr;
 
 			return true;
 		}

@@ -9,6 +9,9 @@
 
 #include "camera.h"
 
+#include "lambertian.h"
+#include "metal.h"
+
 
 color ray_color( const ray& r, const hittable& world, int32_t depth )
 {
@@ -19,8 +22,15 @@ color ray_color( const ray& r, const hittable& world, int32_t depth )
 	hit_record hit;
 	if (world.hit( r, 0.001, Infinity, OUT hit ))
 	{
-		point3 target = hit.Point + random_in_hemisphere( hit.Normal );
-		return 0.5 * ray_color( ray( hit.Point, target - hit.Point ), world, depth - 1 );
+		ray scattered;
+		color attenuation;
+
+		if (hit.MaterialPtr->scatter( r, hit, OUT attenuation, OUT scattered ))
+		{
+			return  attenuation * ray_color( scattered, world, depth - 1 );
+		}
+
+		return color( 0.0 );
 	}
 
 
@@ -35,15 +45,23 @@ int main( )
 {
 	//image
 	const double_t aspect_ratio = 16.0 / 9.0;
-	const int64_t image_width = 720;
+	const int64_t image_width = 1280;
 	const int64_t image_height = static_cast<int64_t>( image_width / aspect_ratio );
 	const int32_t samples_per_pixel = 100;
 	const int32_t max_depth = 50;
 
+	//materials
+	mat_ptr material_ground = std::make_shared<lambertian>( color( 0.8, 0.8, 0.0 ) );
+	mat_ptr material_center = std::make_shared<lambertian>( color( 0.7, 0.3, 0.3 ) );
+	mat_ptr material_left = std::make_shared<metal>( color( 0.8, 0.8, 0.8 ), 0.3 );
+	mat_ptr material_right = std::make_shared<metal>( color( 0.8, 0.6, 0.2 ), 1.0 );
+
 	//world
 	hittable_list world;
-	world.add( std::make_shared<sphere>( point3( 0, 0, -1 ), 0.5 ) );
-	world.add( std::make_shared<sphere>( point3( 0, -100.5, -1 ), 100 ) );
+	world.add( std::make_shared<sphere>( point3( 0.0, -100.5, -1.0 ), 100.0, material_ground ) );
+	world.add( std::make_shared<sphere>( point3( 0.0, 0.0, -1.0 ), 0.5, material_center ) );
+	world.add( std::make_shared<sphere>( point3( -1.0, 0.0, -1.0 ), 0.5, material_left ) );
+	world.add( std::make_shared<sphere>( point3( 1.0, 0.0, -1.0 ), 0.5, material_right ) );
 
 	//camera
 	camera cam;

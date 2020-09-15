@@ -1,7 +1,11 @@
 #pragma once
 
+#include <memory>
+
 #include "ray.h"
 #include "evals.h"
+
+class material;
 
 struct hit_record
 {
@@ -10,6 +14,7 @@ public:
 	double_t Time;
 	vec3 Normal;
 	bool IsFrontFace;
+	std::shared_ptr<material> MaterialPtr;
 
 public:
 

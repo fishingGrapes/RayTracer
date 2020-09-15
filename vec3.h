@@ -1,11 +1,11 @@
 #pragma once
 
 #include <iostream>
-
 #include "common.h"
 
 class vec3
 {
+
 public:
 	union
 	{
@@ -166,7 +166,7 @@ inline vec3 operator/( const vec3& v, double_t t )
 	return v * ( 1.0 / t );
 }
 
-vec3 random_unit_vec3( )
+vec3 random_in_unit_sphere( )
 {
 	while (true)
 	{
@@ -176,9 +176,21 @@ vec3 random_unit_vec3( )
 	}
 }
 
+vec3 random_unit_vec3( )
+{
+	double_t a = random_double( 0, 2 * PI );
+	double_t z = random_double( -1, 1 );
+
+	//Since this is a unit vector the total magintude is x2 + y2 + z2 = 1^2
+	//hence the remaing x2 + y2 = sqrt(1^2  - z2);
+	double_t r = std::sqrt( 1 - z * z );
+
+	return vec3( r * std::cos( a ), r * std::sin( a ), z );
+}
+
 vec3 random_in_hemisphere( const vec3& normal )
 {
-	vec3 unit_vector = random_unit_vec3( );
+	vec3 unit_vector = random_in_unit_sphere( );
 
 	//in the same hemishpere as normal
 	if (vec3::dot( unit_vector, normal ) > 0.0)
@@ -190,5 +202,11 @@ vec3 random_in_hemisphere( const vec3& normal )
 		return -unit_vector;
 	}
 }
+
+inline vec3 reflect( const vec3& v, const vec3& n )
+{
+	return v - ( 2 * vec3::dot( v, n ) * n );
+}
+
 
 
