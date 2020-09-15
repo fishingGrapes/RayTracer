@@ -1,29 +1,28 @@
-#include <iostream>
+#include "pch.h"
 
 #include "vec3.h"
 #include "color.h"
 #include "ray.h"
 
+#include "hittable_list.h"
+#include "sphere.h"
 
-bool hit_sphere( const point3& center, double_t radius, const ray& r )
+#include "camera.h"
+
+
+color ray_color( const ray& r, const hittable& world, int32_t depth )
 {
-	vec3 oc = r.Origin - center;
 
-	double_t a = vec3::dot( r.Direction, r.Direction );
-	double_t b = 2.0 * vec3::dot( oc, r.Direction );
-	double_t c = vec3::dot( oc, oc ) - ( radius * radius );
+	if (depth <= 0)
+		return color( 0.0 );
 
-	double_t discriminant = b * b - 4 * a * c;
-	return discriminant > 0;
-}
-
-
-color ray_color( const ray& r )
-{
-	if (hit_sphere( point3( 0, 0, -1 ), 0.5, r ))
+	hit_record hit;
+	if (world.hit( r, 0.001, Infinity, OUT hit ))
 	{
-		return color( 1, 0, 0 );
+		point3 target = hit.Point + random_in_hemisphere( hit.Normal );
+		return 0.5 * ray_color( ray( hit.Point, target - hit.Point ), world, depth - 1 );
 	}
+
 
 	vec3 unit_direction = r.Direction.normalized( );
 	//map (-1 > 1) to (0 -> 1)
@@ -36,20 +35,18 @@ int main( )
 {
 	//image
 	const double_t aspect_ratio = 16.0 / 9.0;
-	const int64_t image_width = 400;
+	const int64_t image_width = 720;
 	const int64_t image_height = static_cast<int64_t>( image_width / aspect_ratio );
+	const int32_t samples_per_pixel = 100;
+	const int32_t max_depth = 50;
+
+	//world
+	hittable_list world;
+	world.add( std::make_shared<sphere>( point3( 0, 0, -1 ), 0.5 ) );
+	world.add( std::make_shared<sphere>( point3( 0, -100.5, -1 ), 100 ) );
 
 	//camera
-	double_t viewport_height = 2.0;
-	double_t viewport_width = viewport_height * aspect_ratio;
-	double_t focal_length = 1.0;
-
-	point3 origin( 0.0 );
-	vec3 horizontal = vec3( viewport_width, 0, 0 );
-	vec3 vertical = vec3( 0, viewport_height, 0 );
-
-	//raytracing starts from this point
-	point3 lower_left = origin - ( horizontal * 0.5 ) - ( vertical * 0.5 ) - vec3( 0, 0, focal_length );
+	camera cam;
 
 	//render
 	std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
@@ -60,17 +57,22 @@ int main( )
 
 		for (int64_t y = 0; y < image_width; ++y)
 		{
-			// u => (0 -> 1)
-			double_t u = double_t( y ) / ( image_width - 1 );
-			// v => (1 -> 0)
-			double_t v = double_t( x ) / ( image_height - 1 );
+
+			color pixel_color( 0.0 );
+
+			for (int64_t s = 0; s < samples_per_pixel; ++s)
+			{
+				// u => (0 -> 1)
+				double_t u = ( y + random_double( ) ) / ( image_width - 1 );
+				// v => (1 -> 0)
+				double_t v = ( x + random_double( ) ) / ( image_height - 1 );
+
+				ray r = cam.get_ray( u, v );
+				pixel_color += ray_color( r, world, max_depth );
+			}
 
 
-			//scan from top-left to bottom-right
-			ray r( origin, lower_left + u * horizontal + v * vertical - origin );
-			color pixel_color = ray_color( r );
-
-			write_color( std::cout, pixel_color );
+			write_color( std::cout, pixel_color, samples_per_pixel );
 		}
 	}
 	std::cerr << "\nDone." << std::endl;

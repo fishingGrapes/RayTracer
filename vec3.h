@@ -1,7 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include <cmath>
+
+#include "common.h"
 
 class vec3
 {
@@ -27,16 +28,16 @@ public:
 
 public:
 
-	vec3( ) : X( 0 ), Y( 0 ), Z( 0 )
+	constexpr vec3( ) : X( 0 ), Y( 0 ), Z( 0 )
 	{
 	}
 
-	vec3( double_t n )
-		:X( n ), Y( n ), Z( n )
+	constexpr vec3( double_t n )
+		: X( n ), Y( n ), Z( n )
 	{
 	}
 
-	vec3( double_t x, double_t y, double_t z )
+	constexpr vec3( double_t x, double_t y, double_t z )
 		: X( x ), Y( y ), Z( z )
 	{
 	}
@@ -59,6 +60,15 @@ public:
 	inline vec3 operator-( ) const
 	{
 		return vec3( -X, -Y, -Z );
+	}
+
+	inline vec3 operator+=( const vec3& v )
+	{
+		X += v.X;
+		Y += v.Y;
+		Z += v.Z;
+
+		return *this;
 	}
 
 	inline double_t length( ) const
@@ -96,6 +106,30 @@ public:
 		v.Z = v.Z * length_inverse;
 	}
 
+	inline static vec3 random( )
+	{
+		return vec3( random_double( ), random_double( ), random_double( ) );
+	}
+
+	inline static vec3 random( double_t min, double_t max )
+	{
+		return vec3( random_double( min, max ), random_double( min, max ), random_double( min, max ) );
+	}
+
+	inline static constexpr vec3 Up( )
+	{
+		return vec3( 0.0, 1.0, 0.0 );
+	}
+
+	inline static constexpr vec3 Right( )
+	{
+		return vec3( 1.0, 0.0, 0.0 );
+	}
+
+	inline static constexpr vec3 Forward( )
+	{
+		return vec3( 0.0, 0.0, -1.0 );
+	}
 };
 
 using point3 = vec3;
@@ -131,4 +165,30 @@ inline vec3 operator/( const vec3& v, double_t t )
 {
 	return v * ( 1.0 / t );
 }
+
+vec3 random_unit_vec3( )
+{
+	while (true)
+	{
+		vec3 p = vec3::random( -1, 1 );
+		if (p.length_squared( ) >= 1) continue;
+		return p;
+	}
+}
+
+vec3 random_in_hemisphere( const vec3& normal )
+{
+	vec3 unit_vector = random_unit_vec3( );
+
+	//in the same hemishpere as normal
+	if (vec3::dot( unit_vector, normal ) > 0.0)
+	{
+		return unit_vector;
+	}
+	else
+	{
+		return -unit_vector;
+	}
+}
+
 
