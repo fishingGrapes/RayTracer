@@ -203,9 +203,36 @@ vec3 random_in_hemisphere( const vec3& normal )
 	}
 }
 
+vec3 random_in_unit_disk( )
+{
+	while (true)
+	{
+		vec3 p = vec3( random_double( -1, 1 ), random_double( -1, 1 ), 0.0 );
+
+		if (p.length_squared( ) >= 1) continue;
+		return p;
+	}
+}
+
 inline vec3 reflect( const vec3& v, const vec3& n )
 {
 	return v - ( 2 * vec3::dot( v, n ) * n );
+}
+
+vec3 refract( const vec3& v, const vec3& n, double_t etai_over_etat )
+{
+	/*
+	R => Incident, R' => Refracted
+	R'per = eta_incident/eta_other * (R + cos (theta) . n)
+	R'par =  - sqrt(1 - |Rper|^2) . n
+	a.b = |a||b| cos (theta) => if a and b awe unit vectors => a.b = cos (theta)
+	therefore, Rper = eta_incident/eta_other * (R + (-R.n). n)
+	*/
+
+	double_t cos_theta = vec3::dot( -v, n );
+	vec3 Rper = etai_over_etat * ( v + cos_theta * n );
+	vec3 Rpar = -1.0 * std::sqrt( 1.0 - Rper.length_squared( ) ) * n;
+	return Rper + Rpar;
 }
 
 

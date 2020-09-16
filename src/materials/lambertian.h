@@ -10,6 +10,8 @@ public:
 	color Albedo;
 
 public:
+
+	lambertian( ) = delete;
 	lambertian( const color& albedo )
 		:Albedo( albedo )
 	{

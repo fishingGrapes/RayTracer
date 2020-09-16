@@ -10,6 +10,8 @@ public:
 	double_t Fuzziness;
 
 public:
+
+	metal( ) = delete;
 	metal( const color& albedo, double_t fuzziness )
 		:Albedo( albedo ), Fuzziness( fuzziness )
 	{
