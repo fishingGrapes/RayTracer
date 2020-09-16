@@ -1,5 +1,5 @@
 # RayTracer
-A simple software RayTracer implemented in C++.
+A Software RayTracer implemented in C++.
 
 ### Features
 - [x] Sphere Raytracing
@@ -9,7 +9,7 @@ A simple software RayTracer implemented in C++.
 - [ ] Lights
 - [ ] Raytraced Volumes
 
-###### How to run
+### How to run
 Once the execuatble(RayTracer.exe) is compiled, Open Command prompt and run it with follwoing parameter.
 ```RayTracer.exe > image.ppm```
 
